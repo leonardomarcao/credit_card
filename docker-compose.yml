@@ -1,0 +1,24 @@
+version: "3.6"
+
+x-build-args: &build_args
+  INSTALL_PYTHON_VERSION: "3.10"
+
+x-default-volumes: &default_volumes
+  volumes:
+    - ./:/app
+    - ./dev.db:/tmp/dev.db
+
+services:
+  manage:
+    build:
+      context: .
+      args:
+        <<: *build_args
+    entrypoint: flask
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+    image: "card_vault-manage"
+    <<: *default_volumes
+    ports:
+      - "8080:5000"

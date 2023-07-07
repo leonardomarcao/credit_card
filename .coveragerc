@@ -1,0 +1,6 @@
+[run]
+source = card_vault
+omit = 
+    tests/*
+    autoapp.py
+
