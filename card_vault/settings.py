@@ -7,8 +7,10 @@ For local development, use a .env file to set
 environment variables.
 """
 from environs import Env
+import os
 
 env = Env()
+base_dir = os.path.abspath(os.path.dirname(__file__))
 env.read_env()
 
 ENV = env.str("FLASK_ENV", default="production")

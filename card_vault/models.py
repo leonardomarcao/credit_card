@@ -1,7 +1,5 @@
 from creditcard import CreditCard as CreditCardValidator
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from card_vault.extensions import db
 
 
 class CreditCard(db.Model):
