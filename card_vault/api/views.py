@@ -1,36 +1,91 @@
-from flask import Blueprint, jsonify, request
-from flask_restful import Api, Resource
+from flask import Blueprint, abort, jsonify
+from flask_restx import Api, Resource
 from pydantic import ValidationError
+from card_vault.utils import pydantic_to_flask_restx
 
 from card_vault.dal import CreditCardDal
 from card_vault.api.validators import CreditCardModel
 
 blueprint = Blueprint("api", __name__)
-api = Api(blueprint)
+api = Api(blueprint, doc="/docs/")
+
+card_fields = api.model('CreditCard', pydantic_to_flask_restx(CreditCardModel))
 
 
+@api.route("/api/v1/credit-card")
 class CreditCardListResource(Resource):
+    @api.doc('list_cards')
+    @api.marshal_list_with(card_fields)
     def get(self):
+        """List all cards"""
         cards = CreditCardDal.get_all()
-        return jsonify(cards)
+        return cards
 
+    @api.doc('create_card')
+    @api.expect(card_fields)
+    @api.marshal_with(card_fields, code=201)
     def post(self):
-        data = request.get_json()
+        """Create a new card"""
         try:
-            validated_data = CreditCardModel(**data)
+            payload = CreditCardModel(**api.payload)
+            card = CreditCardDal.create(payload)
+            return card
         except ValidationError as e:
-            return jsonify({"errors": e.errors()}), 400
-
-        card = CreditCardDal.create(validated_data)
-        return jsonify(card.serialize()), 201
+            abort(400, str(e))
 
 
+@api.route("/api/v1/credit-card/<int:id>")
+@api.response(404, 'Card not found')
+@api.param('id', 'The card identifier')
 class CreditCardResource(Resource):
+    @api.doc('get_card')
+    @api.marshal_with(card_fields)
     def get(self, id):
+        """Fetch a card given its identifier"""
         card = CreditCardDal.get_by_id(id)
         if not card:
-            return jsonify({"error": "Card not found"}), 404
-        return jsonify(card.serialize())
+            api.abort(404, "Card not found")
+        return card
+
+    @api.doc('create_card')
+    @api.expect(card_fields)
+    @api.marshal_with(card_fields, code=201)
+    def post(self, payload):
+        """Create a new card"""
+        payload = api.payload  # Get the request body
+
+        # Validate the payload using the Pydantic model
+        try:
+            validated_payload = CreditCardModel(**payload)
+        except ValidationError as e:
+            abort(400, str(e))  # Return a 400 Bad Request error if validation fails
+
+        # If validation passes, create the card
+        card = CreditCardDal.create(validated_payload)
+        return card, 201
+
+    @api.doc('update_card')
+    @api.expect(card_fields)
+    @api.marshal_with(card_fields)
+    def put(self, id):
+        """Update a card given its identifier"""
+        try:
+            payload = CreditCardModel(**api.payload)
+            card = CreditCardDal.update(id, payload)
+            if not card:
+                api.abort(404, "Card not found")
+            return card
+        except ValidationError as e:
+            abort(400, str(e))
+
+    @api.doc('delete_card')
+    @api.response(204, 'Card deleted')
+    def delete(self, id):
+        """Delete a card given its identifier"""
+        deleted = CreditCardDal.delete(id)
+        if not deleted:
+            api.abort(404, "Card not found")
+        return None, 204
 
 
 api.add_resource(CreditCardListResource, "/api/v1/credit-card")

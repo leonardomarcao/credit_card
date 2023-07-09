@@ -23,3 +23,13 @@ class CreditCard(db.Model):
     def get_brand(number):
         cc = CreditCardValidator(number)
         return cc.get_brand()
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "holder": self.holder,
+            "number": self.number,
+            "exp_date": self.exp_date.strftime("%m/%Y"),
+            "cvv": self.cvv,
+            "brand": self.brand,
+        }
