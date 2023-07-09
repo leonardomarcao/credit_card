@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """Helper utilities and decorators."""
-from pydantic import BaseModel
-from flask_restx import fields
-from typing import List, Dict, Union
 from functools import wraps
+from typing import Dict, List, Union
+
 from flask import jsonify
-from pydantic import ValidationError
+from flask_restx import fields
+from pydantic import BaseModel, ValidationError
 
 
-def pydantic_to_flask_restx(pydantic_model: BaseModel) -> Dict[str, Union[fields.Raw, fields.Nested]]:
+def pydantic_to_flask_restx(
+    pydantic_model: BaseModel,
+) -> Dict[str, Union[fields.Raw, fields.Nested]]:
     TYPE_MAPPER = {
         str: fields.String,
         int: fields.Integer,
@@ -23,7 +25,7 @@ def pydantic_to_flask_restx(pydantic_model: BaseModel) -> Dict[str, Union[fields
         field_type = TYPE_MAPPER.get(field, fields.Raw)
 
         if field_type is fields.Nested:
-            if hasattr(field, '__origin__') and issubclass(field.__origin__, List):
+            if hasattr(field, "__origin__") and issubclass(field.__origin__, List):
                 nested_model = pydantic_to_flask_restx(field.__args__[0])
                 flask_model[name] = fields.List(fields.Nested(nested_model))
             else:
@@ -44,6 +46,7 @@ def marshal_with(model, code=200):
                 return model.dump(result), code
             except ValidationError as e:
                 return jsonify({"message": str(e)}), 400
-        return wrapper
-    return decorator
 
+        return wrapper
+
+    return decorator

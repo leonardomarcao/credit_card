@@ -1,10 +1,10 @@
-from card_vault.models import CreditCard
-from card_vault.extensions import db
 from datetime import datetime
+
+from card_vault.extensions import db
+from card_vault.models import CreditCard
 
 
 class CreditCardDal:
-
     @staticmethod
     def get_all():
         cards = CreditCard.query.all()

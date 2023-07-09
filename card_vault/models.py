@@ -1,4 +1,5 @@
 from creditcard import CreditCard as CreditCardValidator
+
 from card_vault.extensions import db
 
 
