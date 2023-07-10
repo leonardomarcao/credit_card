@@ -2,16 +2,38 @@
 """Helper utilities and decorators."""
 import binascii
 from base64 import b64decode, b64encode
+from functools import wraps
 from typing import Dict, List, Union
 
 from Crypto import Random
 from Crypto.Cipher import AES
-from flask_restx import fields
+from flask import request
+from flask_restx import abort, fields
 from pydantic import BaseModel
+
+from card_vault import settings
+
+
+def authenticate(username, password):
+    return (
+        username == settings.BASIC_AUTH_USERNAME
+        and password == settings.BASIC_AUTH_PASSWORD
+    )
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not authenticate(auth.username, auth.password):
+            return abort(403, "Unauthorized access")
+        return f(*args, **kwargs)
+
+    return decorated
 
 
 def pydantic_to_flask_restx(
-        pydantic_model: BaseModel,
+    pydantic_model: BaseModel,
 ) -> Dict[str, Union[fields.Raw, fields.Nested]]:
     TYPE_MAPPER = {
         str: fields.String,
@@ -58,7 +80,7 @@ class AESCipher:
             enc = b64decode(enc)
             iv = enc[: AES.block_size]
             cipher = AES.new(self.key, AES.MODE_CBC, iv)
-            return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode("utf-8")
+            return self._unpad(cipher.decrypt(enc[AES.block_size :])).decode("utf-8")
         except binascii.Error:
             print("Error: Incorrect padding")
             return None
@@ -71,4 +93,4 @@ class AESCipher:
 
     @staticmethod
     def _unpad(s):
-        return s[: -ord(s[len(s) - 1:])]
+        return s[: -ord(s[len(s) - 1 :])]

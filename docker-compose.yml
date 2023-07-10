@@ -6,19 +6,19 @@ x-build-args: &build_args
 x-default-volumes: &default_volumes
   volumes:
     - ./:/app
-    - ./dev.db:/tmp/dev.db
 
 services:
-  manage:
+  card-vault-app:
     build:
       context: .
       args:
         <<: *build_args
-    entrypoint: flask
+    image: "card_vault-manage:local"
+    entrypoint: /bin/bash
+    command: "-c 'flask db upgrade && flask run --host=0.0.0.0 --port=5000'"
     environment:
       FLASK_ENV: development
       FLASK_DEBUG: 1
-    image: "card_vault-manage"
     <<: *default_volumes
     ports:
       - "8080:5000"

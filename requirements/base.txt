@@ -5,6 +5,8 @@ click>=7.0
 Flask==2.3.2
 Werkzeug==2.3.6
 Flask-Restful==0.3.10
+flask-restx==1.1.0
+Flask-HTTPAuth==4.8.0
 
 # Database
 Flask-SQLAlchemy==3.0.5

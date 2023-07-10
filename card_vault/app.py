@@ -3,7 +3,7 @@
 from flask import Flask
 
 from card_vault.api import views
-from card_vault.extensions import bcrypt, db, migrate
+from card_vault.extensions import db, migrate
 
 
 def create_app(config_object="card_vault.settings"):
@@ -20,7 +20,6 @@ def create_app(config_object="card_vault.settings"):
 
 def register_extensions(app):
     """Register Flask extensions."""
-    bcrypt.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
     return None

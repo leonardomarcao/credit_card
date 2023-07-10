@@ -21,11 +21,23 @@ class CreditCard(db.Model):
     def __init__(self, holder, number, exp_date, cvv=None):
         cipher = AESCipher()
         self.holder = holder
-        self.number = cipher.encrypt(number)
+        self.number = cipher.encrypt("".join(filter(str.isdigit, number)))
         self.exp_date = self.get_exp_date(exp_date)
         self.cvv = cvv
         self.brand = self.get_brand(number)
         self.key = cipher.get_key()
+
+    def decrypt_number(self) -> str:
+        """
+        This method is used to decrypt the credit card number.
+
+        Returns
+        -------
+        str
+            The decrypted credit card number.
+        """
+        cipher = AESCipher(key=self.key)
+        return cipher.decrypt(self.number)
 
     @staticmethod
     def get_brand(number) -> str:
@@ -65,11 +77,6 @@ class CreditCard(db.Model):
         _, day = monthrange(year, month)
         exp_dt = datetime(year, month, day)
         return exp_dt.date()
-
-    @staticmethod
-    def decrypt_number(self):
-        cipher = AESCipher(key=self.key)
-        return cipher.decrypt(self.number)
 
     def serialize(self) -> dict:
         """
