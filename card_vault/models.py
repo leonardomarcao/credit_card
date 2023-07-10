@@ -1,6 +1,10 @@
+from calendar import monthrange
+from datetime import datetime
+
 from creditcard import CreditCard as CreditCardValidator
 
 from card_vault.extensions import db
+from card_vault.utils import AESCipher
 
 
 class CreditCard(db.Model):
@@ -12,20 +16,70 @@ class CreditCard(db.Model):
     exp_date = db.Column(db.Date, nullable=False)
     cvv = db.Column(db.String)
     brand = db.Column(db.String)
+    key = db.Column(db.String)
 
     def __init__(self, holder, number, exp_date, cvv=None):
+        cipher = AESCipher()
         self.holder = holder
-        self.number = number
-        self.exp_date = exp_date
+        self.number = cipher.encrypt(number)
+        self.exp_date = self.get_exp_date(exp_date)
         self.cvv = cvv
         self.brand = self.get_brand(number)
+        self.key = cipher.get_key()
 
     @staticmethod
-    def get_brand(number):
+    def get_brand(number) -> str:
+        """
+        This method is used to get the brand of the credit card.
+
+        Parameters
+        ----------
+        number : str
+            The credit card number.
+
+        Returns
+        -------
+        str
+            The brand of the credit card.
+        """
         cc = CreditCardValidator(number)
         return cc.get_brand()
 
-    def serialize(self):
+    @staticmethod
+    def get_exp_date(exp_date) -> datetime.date:
+        """
+        This method is used to convert the expiration date of the credit card
+        to a datetime object.
+
+        Parameters
+        ----------
+        exp_date : str
+            The expiration date of the credit card.
+
+        Returns
+        -------
+        datetime.date
+            The expiration date of the credit card as a datetime object.
+        """
+        month, year = map(int, exp_date.split("/"))
+        _, day = monthrange(year, month)
+        exp_dt = datetime(year, month, day)
+        return exp_dt.date()
+
+    @staticmethod
+    def decrypt_number(self):
+        cipher = AESCipher(key=self.key)
+        return cipher.decrypt(self.number)
+
+    def serialize(self) -> dict:
+        """
+        This method is used to serialize the credit card object.
+
+        Returns
+        -------
+        dict
+            The serialized credit card object.
+        """
         return {
             "id": self.id,
             "holder": self.holder,

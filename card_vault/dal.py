@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from card_vault.extensions import db
 from card_vault.models import CreditCard
+from card_vault.utils import AESCipher
 
 
 class CreditCardDal:
@@ -18,11 +17,26 @@ class CreditCardDal:
         return card.serialize()
 
     @staticmethod
+    def get_by_number(number):
+        cards = CreditCard.query.all()
+
+        for card in cards:
+            # decrypt each card number
+            cipher = AESCipher(key=card.key)
+            decrypted_number = cipher.decrypt(card.number)
+
+            # compare decrypted number with the incoming number
+            if decrypted_number == number:
+                return card.serialize()
+
+        return {"error": "Card not found"}
+
+    @staticmethod
     def create(data):
         card = CreditCard(
             holder=data.holder,
             number=data.number,
-            exp_date=datetime.strptime(data.exp_date, "%m/%Y"),
+            exp_date=data.exp_date,
             cvv=data.cvv,
         )
         db.session.add(card)
@@ -36,7 +50,7 @@ class CreditCardDal:
             return {"error": "Card not found"}
         card.holder = data.holder
         card.number = data.number
-        card.exp_date = datetime.strptime(data.exp_date, "%m/%Y")
+        card.exp_date = data.exp_date
         card.cvv = data.cvv
         db.session.commit()
         return card.serialize()

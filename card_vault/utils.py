@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """Helper utilities and decorators."""
-from functools import wraps
+import binascii
+from base64 import b64decode, b64encode
 from typing import Dict, List, Union
 
-from flask import jsonify
+from Crypto import Random
+from Crypto.Cipher import AES
 from flask_restx import fields
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 
 def pydantic_to_flask_restx(
-    pydantic_model: BaseModel,
+        pydantic_model: BaseModel,
 ) -> Dict[str, Union[fields.Raw, fields.Nested]]:
     TYPE_MAPPER = {
         str: fields.String,
@@ -37,16 +39,36 @@ def pydantic_to_flask_restx(
     return flask_model
 
 
-def marshal_with(model, code=200):
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            try:
-                result = f(*args, **kwargs)
-                return model.dump(result), code
-            except ValidationError as e:
-                return jsonify({"message": str(e)}), 400
+class AESCipher:
+    def __init__(self, key=None):
+        self.bs = AES.block_size
+        if key is not None:
+            self.key = b64decode(key)
+        else:
+            self.key = Random.new().read(AES.key_size[-1])
 
-        return wrapper
+    def encrypt(self, raw):
+        raw = self._pad(raw).encode()
+        iv = Random.new().read(AES.block_size)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return b64encode(iv + cipher.encrypt(raw)).decode("utf-8")
 
-    return decorator
+    def decrypt(self, enc):
+        try:
+            enc = b64decode(enc)
+            iv = enc[: AES.block_size]
+            cipher = AES.new(self.key, AES.MODE_CBC, iv)
+            return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode("utf-8")
+        except binascii.Error:
+            print("Error: Incorrect padding")
+            return None
+
+    def get_key(self):
+        return b64encode(self.key).decode("utf-8")
+
+    def _pad(self, s):
+        return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs)
+
+    @staticmethod
+    def _unpad(s):
+        return s[: -ord(s[len(s) - 1:])]
