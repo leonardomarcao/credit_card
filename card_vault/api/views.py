@@ -43,7 +43,7 @@ class CreditCardListResource(Resource):
         try:
             payload = CreditCardModel(**api.payload)
             card = CreditCardDal.create(payload)
-            return card
+            return card, 201
         except ValidationError as e:
             abort(400, str(e))
         except Exception as e:
@@ -55,33 +55,35 @@ class CreditCardListResource(Resource):
 @api.param("number", "The number of the card to fetch")
 class CreditCardResource(Resource):
     @api.doc("get_card", security="basicAuth")
+    @api.expect(card_fields)
     @api.marshal_with(card_fields)
     def get(self, number):
         """Fetch a card given its number"""
         card = CreditCardDal.get_by_number(number)
         if not card:
             api.abort(404, "Card not found")
-        return card
+        return card.serialize()
 
     @api.doc("update_card", security="basicAuth")
     @api.expect(card_fields)
     @api.marshal_with(card_fields)
-    def put(self, id):
+    def put(self, number):
         """Update a card given its number"""
         try:
             payload = CreditCardModel(**api.payload)
-            card = CreditCardDal.update(id, payload)
+            card = CreditCardDal.update(number, payload)
             if not card:
                 api.abort(404, "Card not found")
-            return card
+            return card, 200
         except ValidationError as e:
             abort(400, str(e))
 
     @api.doc("delete_card", security="basicAuth")
+    @api.expect(card_fields)
     @api.response(204, "Card deleted")
-    def delete(self, id):
+    def delete(self, number):
         """Delete a card given its number"""
-        deleted = CreditCardDal.delete(id)
+        deleted = CreditCardDal.delete(number)
         if not deleted:
             api.abort(404, "Card not found")
         return None, 204

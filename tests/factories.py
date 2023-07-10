@@ -1,30 +1,18 @@
 # -*- coding: utf-8 -*-
 """Factories to help in tests."""
-from factory import Sequence
+
 from factory.alchemy import SQLAlchemyModelFactory
 
-from card_vault.database import db
-from card_vault.user.models import User
+from card_vault.extensions import db
+from card_vault.models import CreditCard
 
 
-class BaseFactory(SQLAlchemyModelFactory):
-    """Base factory."""
-
+class CreditCardFactory(SQLAlchemyModelFactory):
     class Meta:
-        """Factory configuration."""
-
-        abstract = True
+        model = CreditCard
         sqlalchemy_session = db.session
 
-
-class UserFactory(BaseFactory):
-    """User factory."""
-
-    username = Sequence(lambda n: f"user{n}")
-    email = Sequence(lambda n: f"user{n}@example.com")
-    active = True
-
-    class Meta:
-        """Factory configuration."""
-
-        model = User
+    holder = "John Doe"
+    number = "4182-9188-5511-3275"
+    exp_date = "12/2025"
+    cvv = "123"

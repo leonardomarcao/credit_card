@@ -63,7 +63,7 @@ class CreditCardDal:
         return card.serialize()
 
     @staticmethod
-    def get_by_number(number: str) -> Union[dict, None]:
+    def get_by_number(number: str) -> Union[CreditCardModel, None]:
         """
         This method is used to get a credit card by its number.
 
@@ -84,7 +84,7 @@ class CreditCardDal:
 
         for card in cards:
             if card.decrypt_number() == number:
-                return card.serialize()
+                return card
 
         return None
 
@@ -117,14 +117,14 @@ class CreditCardDal:
         return card.serialize()
 
     @staticmethod
-    def update(id: int, data: CreditCardModel) -> Union[dict, None]:
+    def update(number: str, data: CreditCardModel) -> Union[dict, None]:
         """
         This method is used to update a credit card.
 
         Parameters
         ----------
-        id : int
-            The id of the credit card.
+        number : str
+            The credit card number.
         data : CreditCardModel
             The credit card data.
 
@@ -135,25 +135,29 @@ class CreditCardDal:
         None
             If the credit card does not exist.
         """
-        card = CreditCard.query.get(id)
+        card = CreditCardDal.get_by_number(number)
+        card_id = card.id
+        new_card = CreditCard(
+            holder=data.holder,
+            number=data.number,
+            exp_date=data.exp_date,
+            cvv=data.cvv,
+        )
         if not card:
             return None
-        card.holder = data.holder
-        card.number = data.number
-        card.exp_date = data.exp_date
-        card.cvv = data.cvv
+        card = new_card
         db.session.commit()
-        return card.serialize()
+        return {**card.serialize(), "id": card_id}
 
     @staticmethod
-    def delete(id: int) -> Union[dict, None]:
+    def delete(number: str) -> Union[dict, None]:
         """
         This method is used to delete a credit card.
 
         Parameters
         ----------
-        id : int
-            The id of the credit card.
+        number : str
+            The credit card number.
 
         Returns
         -------
@@ -162,7 +166,7 @@ class CreditCardDal:
         None
             If the credit card does not exist.
         """
-        card = CreditCard.query.get(id)
+        card = CreditCardDal.get_by_number(number)
         if not card:
             return None
         db.session.delete(card)

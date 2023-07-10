@@ -7,16 +7,16 @@ import pytest
 from webtest import TestApp
 
 from card_vault.app import create_app
-from card_vault.database import db as _db
-
-from .factories import UserFactory
+from card_vault.extensions import db as _db
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def app():
     """Create application for the tests."""
-    _app = create_app("tests.settings")
+    _app = create_app("card_vault.settings")
     _app.logger.setLevel(logging.CRITICAL)
+    with _app.app_context():
+        _db.create_all()
     ctx = _app.test_request_context()
     ctx.push()
 
@@ -25,13 +25,18 @@ def app():
     ctx.pop()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def testapp(app):
     """Create Webtest app."""
-    return TestApp(app)
+    test_app = TestApp(app)
+    test_app.authorization = (
+        "Basic",
+        (app.config["BASIC_AUTH_USERNAME"], app.config["BASIC_AUTH_PASSWORD"]),
+    )
+    return test_app
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def db(app):
     """Create database for the tests."""
     _db.app = app
@@ -46,8 +51,10 @@ def db(app):
 
 
 @pytest.fixture
-def user(db):
-    """Create user for the tests."""
-    user = UserFactory(password="myprecious")
-    db.session.commit()
-    return user
+def payload():
+    return {
+        "holder": "John Doe",
+        "number": "4182-9188-5511-3275",
+        "exp_date": "12/2025",
+        "cvv": "123",
+    }
