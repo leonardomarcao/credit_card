@@ -15,15 +15,15 @@ class CreditCardDal:
     -------
     get_all()
         This method is used to get all credit cards.
-    get_by_id(id)
+    get_by_id(id_card)
         This method is used to get a credit card by its id.
     get_by_number(number)
         This method is used to get a credit card by its number.
     create(data)
         This method is used to create a credit card.
-    update(id, data)
+    update(number, data)
         This method is used to update a credit card.
-    delete(id)
+    delete(number)
         This method is used to delete a credit card.
     """
 
@@ -41,13 +41,13 @@ class CreditCardDal:
         return [card.serialize() for card in cards]
 
     @staticmethod
-    def get_by_id(id: int) -> Union[dict, None]:
+    def get_by_id(id_card: int) -> Union[dict, None]:
         """
         This method is used to get a credit card by its id.
 
         Parameters
         ----------
-        id : int
+        id_card : int
             The id of the credit card.
 
         Returns
@@ -57,7 +57,7 @@ class CreditCardDal:
         None
             If the credit card does not exist.
         """
-        card = CreditCard.query.get(id)
+        card = CreditCard.query.get(id_card)
         if not card:
             return None
         return card.serialize()

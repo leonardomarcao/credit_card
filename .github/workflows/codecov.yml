@@ -11,13 +11,17 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+        matrix:
+            python-version: [3.9]
+
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Python 3.10
+    - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
-        python-version: 3.10
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
@@ -28,6 +32,13 @@ jobs:
       run: |
         pip install pytest-cov
         pytest --cov=card_vault tests/
+      env:
+        FLASK_APP: autoapp.py
+        FLASK_DEBUG: 1
+        FLASK_ENV: development
+        DATABASE_NAME: cardvault
+        BASIC_AUTH_USERNAME: john
+        BASIC_AUTH_PASSWORD: doe
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v2
