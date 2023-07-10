@@ -6,6 +6,19 @@ Card Vault is a secure and intuitive credit card management system designed to s
   <img src="assets/img.png" alt="Sequence Diagram">
 </p>
 
+## Setup
+
+### Prerequisites
+
+- [Python 3.10](https://www.python.org/downloads/release/python-3100/) (if running locally)
+- [Docker](https://docs.docker.com/get-docker/) (if running using Docker)
+- [Docker Compose](https://docs.docker.com/compose/install/) (if running using Docker)
+- [Git](https://git-scm.com/downloads) (for dependencies, like `python-creditcard`)
+
+### Environment Variables ⚠️
+
+- Create a `.env` file in the root directory of the project based on the `.env.example` file.
+
 ## Docker Quickstart
 
 This app can be run completely using Docker` and `docker-compose`. Using Docker is recommended, as it guarantees the application is run using compatible versions of Python.
@@ -79,3 +92,9 @@ pytest --cov=card_vault
 
 docker-compose run card-vault-app pytest --cov=card_vault
 ```
+
+
+### Acknowledgements/Credits
+
+- [python-creditcard](https://github.com/MaisTodos/python-creditcard): this project was used as a reference for the credit card validation logic.
+- [cookiecutter-flask](https://github.com/cookiecutter-flask/cookiecutter-flask): this project was bootstrapped using the Flask Cookiecutter template. We would like to express our sincere gratitude to the maintainers and contributors of this open-source project for providing a strong starting point for our application.
