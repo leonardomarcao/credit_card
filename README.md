@@ -1,8 +1,14 @@
 # Card Vault
 
+Card Vault is a secure and intuitive credit card management system designed to store, retrieve, update, and delete credit card data. The main goal of this application is to provide a convenient solution for businesses and individuals who need to manage a large amount of credit card data.
+
+<p align="center">
+  <img src="assets/img.png" alt="Sequence Diagram">
+</p>
+
 ## Docker Quickstart
 
-This app can be run completely using **Docker** and **`docker-compose`**. Using Docker is recommended, as it guarantees the application is run using compatible versions of Python.
+This app can be run completely using Docker` and `docker-compose`. Using Docker is recommended, as it guarantees the application is run using compatible versions of Python.
 
 To run the app using Docker (detached mode), run the following command:
 
