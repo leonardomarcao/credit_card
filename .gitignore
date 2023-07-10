@@ -60,4 +60,5 @@ env/
 # Idea IDE files
 .idea/
 
+# SQLite database files
 *.sqlite
