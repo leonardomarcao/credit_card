@@ -1,5 +1,7 @@
 # Card Vault
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/327117befd1748b6bb501c7d418dfd96)](https://app.codacy.com/gh/leonardomarcao/credit_card?utm_source=github.com&utm_medium=referral&utm_content=leonardomarcao/credit_card&utm_campaign=Badge_Grade)
+
 Card Vault is a secure and intuitive credit card management system designed to store, retrieve, update, and delete credit card data. The main goal of this application is to provide a convenient solution for businesses and individuals who need to manage a large amount of credit card data.
 
 <p align="center">
